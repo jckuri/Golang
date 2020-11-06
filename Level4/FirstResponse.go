@@ -7,15 +7,15 @@ import (
 
 type Conn struct {
 	id int
-	ms time.Duration
+	ns time.Duration
 }
 
 func (conn Conn) String() string {
-	return fmt.Sprintf("Conn {id: %v, ms=%v}", conn.id, conn.ms)
+	return fmt.Sprintf("Conn {id: %v, ms=%v}", conn.id, conn.ns)
 }
 
 func (conn *Conn) DoQuery() string {
-	time.Sleep(conn.ms * time.Millisecond)
+	time.Sleep(conn.ns)
 	return conn.String()
 }
 
