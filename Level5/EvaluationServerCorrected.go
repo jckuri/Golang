@@ -8,6 +8,7 @@ import (
     "net/http"
     "github.com/gorilla/mux"
     "strconv"
+    "strings"
 )
 
 type Task struct {
@@ -53,8 +54,24 @@ func ReadTask(w http.ResponseWriter, r *http.Request) {
     } else {
         w.WriteHeader(http.StatusOK)
         fmt.Fprintf(w, "%+v", tasks.Tasks[taskIDFound])
+    }  
+}
+
+func SearchTasks(w http.ResponseWriter, r *http.Request) {
+    substring := mux.Vars(r)["substring"]
+    found := make([]Task, 0)
+    for _, task := range tasks.Tasks {
+        if strings.Contains(task.Description, substring) {
+            found = append(found, task)
+        }
     }
-    
+    if len(found) == 0 {
+        w.WriteHeader(http.StatusNotFound)
+        fmt.Fprintf(w, "ERROR: Substring not found in the descriptions of tasks.")
+    } else {
+        w.WriteHeader(http.StatusOK)
+        fmt.Fprintf(w, "%+v", found)
+    }  
 }
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -115,6 +132,7 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 func main() {
     router := mux.NewRouter().StrictSlash(true)
     router.HandleFunc("/ReadTask/{id}", ReadTask).Methods("GET")
+    router.HandleFunc("/SearchTasks/{substring}", SearchTasks).Methods("GET")
     router.HandleFunc("/ReadAllTasks", ReadAllTasks).Methods("GET")
     router.HandleFunc("/CreateTask", CreateTask).Methods("POST")
     router.HandleFunc("/UpdateTask/{id}", UpdateTask).Methods("PUT")
@@ -122,11 +140,3 @@ func main() {
     fmt.Println("Listening requests...")
     log.Fatal(http.ListenAndServe(":8080", router))
 }
-
-/*
-OUTPUT:
-
-$ go run EvaluationServerCorrected.go 
-Listening requests...
-
-*/
